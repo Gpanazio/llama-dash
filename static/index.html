@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llama Model Manager</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Llama Model Manager</h1>
+            <div class="header-actions">
+                <a id="openwebui-link" href="#" target="_blank" class="btn btn-secondary">Open WebUI</a>
+                <button onclick="refreshAll()" class="btn">Atualizar</button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <section class="card full-width">
+                <h2>GPUs</h2>
+                <div id="gpu-grid" class="gpu-grid"><p class="loading">Carregando...</p></div>
+            </section>
+
+            <section class="card full-width">
+                <h2>Status dos Servidores</h2>
+                <div id="server-status"><p class="loading">Carregando...</p></div>
+            </section>
+
+            <section class="card full-width">
+                <div class="section-header">
+                    <h2>Modelos Disponiveis</h2>
+                    <button onclick="loadModels()" class="btn btn-small">Refresh</button>
+                </div>
+                <div id="models-list"><p class="loading">Carregando...</p></div>
+            </section>
+
+            <section class="card">
+                <h2>Presets</h2>
+                <div id="presets-list"><p class="loading">Carregando...</p></div>
+            </section>
+
+            <section class="card">
+                <h2>RPC Server</h2>
+                <div id="rpc-status"><p class="loading">Carregando...</p></div>
+                <p class="hint">Use isto antes de carregar modelo com cluster/RPC. Porta padrão: 50052.</p>
+            </section>
+
+            <section class="card full-width">
+                <h2>Carregar Modelo</h2>
+                <form id="load-form" onsubmit="return loadModel(event)">
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <select id="model-select" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Host</label>
+                        <select id="host-select">
+                            <option value="monstrinho">Monstrinho (2x 3060)</option>
+                            <option value="monstro">Monstro (2x 3080)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Context Size stepper -->
+                        <div class="form-group">
+                            <label>Context Size</label>
+                            <div class="ctx-stepper">
+                                <button type="button" class="ctx-btn" onclick="stepCtx(-4096)">−</button>
+                                <span class="ctx-display" id="ctx-display">32k</span>
+                                <button type="button" class="ctx-btn" onclick="stepCtx(4096)">+</button>
+                            </div>
+                            <input type="hidden" id="ctx-size" value="32768">
+                        </div>
+                        <div class="form-group">
+                            <label>Threads</label>
+                            <input type="number" id="threads" value="8" min="1" max="32">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>GPU Layers</label>
+                            <input type="number" id="n-gpu-layers" value="-1">
+                        </div>
+                        <div class="form-group">
+                            <label>Porta</label>
+                            <input type="number" id="port" value="8080">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox rpc-checkbox">
+                        <label>
+                            <input type="checkbox" id="use-rpc">
+                            <strong>Usar RPC — Cluster 4 GPUs</strong>
+                            <span class="hint">Usa monstrinho + monstro simultaneamente</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="rpc-servers-group" style="display:none">
+                        <label>RPC Servers (auto-configurado)</label>
+                        <input type="text" id="rpc-servers" value="100.114.126.67:50052" readonly>
+                        <span class="hint">Host remoto que complementa as GPUs locais</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thinking</label>
+                        <select id="thinking-mode" onchange="updatePreview()">
+                            <option value="auto">Auto</option>
+                            <option value="off">Off</option>
+                            <option value="on">On</option>
+                        </select>
+                        <span class="hint">Vira opção de preset. Serve para qualquer modelo compatível.</span>
+                    </div>
+
+                    <!-- Extra Args -->
+                    <div class="form-group">
+                        <label>Args extras (opcional)</label>
+                        <div id="extra-args-panel" class="extra-args-panel"></div>
+                        <input type="text" id="extra-args-custom" class="extra-args-custom" placeholder="flags adicionais livres...">
+                        <div class="extra-args-preview" id="extra-args-preview"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Carregar Modelo</button>
+                        <button type="button" onclick="savePresetPrompt()" class="btn btn-secondary">Salvar Preset</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <script src="/app.v3.js"></script>
+</body>
+</html>
